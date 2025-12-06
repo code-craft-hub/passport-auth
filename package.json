@@ -1,11 +1,24 @@
 {
+  "name": "passport-server-auth",
+  "version": "1.0.0",
+  "description": "A Node.js server application implementing authentication using Passport.js with Google OAuth20 and JWT strategies.",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "migrate:generate": "drizzle-kit generate:pg",
+    "migrate:run": "ts-node scripts/migrate.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "jest --coverage"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.0",
     "express": "^5.2.1",
-    "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",
