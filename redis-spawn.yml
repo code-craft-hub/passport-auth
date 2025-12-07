@@ -1,0 +1,23 @@
+
+services:
+  redis:
+    image: redis:8.4-alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-volume_data:/data
+    restart: always
+
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis_insight_volume_data:/db
+    restart: always
+
+volumes:
+  redis-volume_data:
+  redis_insight_volume_data:
