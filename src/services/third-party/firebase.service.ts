@@ -1,8 +1,9 @@
-import { initializeApp, cert, App } from 'firebase-admin/app';
-import { getAuth, Auth } from 'firebase-admin/auth';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
-import { firebaseConfig } from '../../config';
-import { logger } from '../../utils/logger';
+import { initializeApp, cert, App } from "firebase-admin/app";
+import { getAuth, Auth } from "firebase-admin/auth";
+import { getFirestore, Firestore } from "firebase-admin/firestore";
+import { envConfig } from "../../config";
+import { logger } from "../../utils/logger";
+import { serviceAccount } from "../../firebase.service-account.config";
 
 class FirebaseService {
   private app: App | null = null;
@@ -12,30 +13,34 @@ class FirebaseService {
   initialize(): void {
     try {
       this.app = initializeApp({
-        credential: cert(firebaseConfig.credentialsPath),
-        projectId: firebaseConfig.projectId,
+        credential: cert(serviceAccount),
+        // projectId: firebaseConfig.projectId,
+        databaseURL: envConfig.FIREBASE_DATABASE_URL,
       });
 
       this.auth = getAuth(this.app);
       this.firestore = getFirestore(this.app);
+      this.firestore.settings({
+        ignoreUndefinedProperties: true,
+      });
 
-      logger.info('Firebase Admin SDK initialized successfully');
+      logger.info("Firebase Admin SDK initialized successfully");
     } catch (error) {
-      logger.error('Failed to initialize Firebase Admin SDK', error);
+      logger.error("Failed to initialize Firebase Admin SDK", error);
       throw error;
     }
   }
 
   getAuth(): Auth {
     if (!this.auth) {
-      throw new Error('Firebase Auth not initialized');
+      throw new Error("Firebase Auth not initialized");
     }
     return this.auth;
   }
 
   getFirestore(): Firestore {
     if (!this.firestore) {
-      throw new Error('Firestore not initialized');
+      throw new Error("Firestore not initialized");
     }
     return this.firestore;
   }
@@ -44,7 +49,7 @@ class FirebaseService {
     try {
       return await this.getAuth().verifyIdToken(token);
     } catch (error) {
-      logger.error('Token verification failed', error);
+      logger.error("Token verification failed", error);
       throw error;
     }
   }
@@ -58,7 +63,7 @@ class FirebaseService {
         emailVerified: false,
       });
     } catch (error) {
-      logger.error('User creation failed', error);
+      logger.error("User creation failed", error);
       throw error;
     }
   }
@@ -67,7 +72,7 @@ class FirebaseService {
     try {
       return await this.getAuth().getUserByEmail(email);
     } catch (error) {
-      if ((error as any).code === 'auth/user-not-found') {
+      if ((error as any).code === "auth/user-not-found") {
         return null;
       }
       throw error;
@@ -78,7 +83,7 @@ class FirebaseService {
     try {
       return await this.getAuth().getUser(uid);
     } catch (error) {
-      logger.error('Get user failed', error);
+      logger.error("Get user failed", error);
       throw error;
     }
   }
@@ -87,7 +92,7 @@ class FirebaseService {
     try {
       await this.getAuth().setCustomUserClaims(uid, claims);
     } catch (error) {
-      logger.error('Set custom claims failed', error);
+      logger.error("Set custom claims failed", error);
       throw error;
     }
   }
@@ -97,7 +102,7 @@ class FirebaseService {
       await this.getAuth().revokeRefreshTokens(uid);
       logger.info(`Revoked refresh tokens for user: ${uid}`);
     } catch (error) {
-      logger.error('Revoke tokens failed', error);
+      logger.error("Revoke tokens failed", error);
       throw error;
     }
   }

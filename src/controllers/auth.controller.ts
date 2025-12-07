@@ -1,7 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
-import { authService } from '../services/auth.service';
-import { RegisterRequest, LoginRequest, ApiResponse } from '../types';
+import { Request, Response, NextFunction } from "express";
+import { authService } from "../services/auth.service";
+import { RegisterRequest, LoginRequest, ApiResponse } from "../types";
 
+/**
+ * Auth Controller
+ * Handles user registration, login, and logout
+ * methods POST /register
+ * @param email: string;
+ * @param password: string;
+ * @param firstName: string;
+ * @param lastName: string;
+ * @param referredBy?: string;
+ * @returns ApiResponse
+ *
+ */
 export class AuthController {
   async register(
     req: Request<{}, {}, RegisterRequest>,
@@ -14,7 +26,7 @@ export class AuthController {
       res.status(201).json({
         success: true,
         data: result,
-        message: 'User registered successfully',
+        message: "User registered successfully",
       });
     } catch (error) {
       next(error);
@@ -27,14 +39,26 @@ export class AuthController {
     next: NextFunction
   ): Promise<void> {
     try {
-      // Note: Actual login is handled by Firebase client SDK
-      // This endpoint is for custom logic if needed
-      const { email } = req.body;
+      const { email, password } = req.body;
+
+      const { uid, sessionCookie } = await authService.loginWithFirebaseRest(
+        email,
+        password
+      );
+
+      // Set session cookie
+      res.cookie("session", sessionCookie, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+        path: "/",
+      });
 
       res.status(200).json({
         success: true,
-        message: 'Use Firebase client SDK to complete authentication',
-        data: { email },
+        message: "Login successful",
+        data: { uid, email },
       });
     } catch (error) {
       next(error);
@@ -50,7 +74,7 @@ export class AuthController {
       // Client should delete the token
       res.status(200).json({
         success: true,
-        message: 'Logged out successfully',
+        message: "Logged out successfully",
       });
     } catch (error) {
       next(error);

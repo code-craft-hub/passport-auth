@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { AuthProvider, useAuth } from './components/Auth/AuthProvider';
+import { Login } from './components/Auth/Login';
+import { Register } from './components/Auth/Register';
+import { ReferralStats } from './components/Referral/Referral';
+// import { ReferralStats } from './components/Referral/ReferralStats';
 
-function App() {
-  const [count, setCount] = useState(0)
+const AppContent: React.FC = () => {
+  const { user, logout, loading } = useAuth();
+  const [view, setView] = useState<'login' | 'register'>('login');
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div>
+        <h1>CVERai Authentication</h1>
+        
+        <div>
+          <button onClick={() => setView('login')}>Login</button>
+          <button onClick={() => setView('register')}>Register</button>
+        </div>
+
+        {view === 'login' ? <Login /> : <Register />}
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div>
+      <h1>Welcome to CVERai</h1>
+      
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <p>Email: {user.email}</p>
+        <button onClick={logout}>Logout</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+      <ReferralStats />
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

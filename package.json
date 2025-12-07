@@ -16,6 +16,7 @@
     "dev:worker": "nodemon --exec ts-node src/workers/index.ts"
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.65.1",
     "compression": "^1.8.1",
@@ -49,6 +50,7 @@
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/passport-jwt": "^4.0.1",
     "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "keywords": [],
