@@ -10,8 +10,10 @@
     "start": "node dist/server.js",
     "migrate:generate": "drizzle-kit generate:pg",
     "migrate:run": "ts-node scripts/migrate.ts",
-    "lint": "eslint . --ext .ts",
-    "test": "jest --coverage"
+    "lint": "npx eslint . --ext .ts",
+    "test": "jest --coverage",
+    "worker": "node dist/workers/index.js",
+    "dev:worker": "nodemon --exec ts-node src/workers/index.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -38,9 +40,11 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/passport-jwt": "^4.0.1",
