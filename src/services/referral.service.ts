@@ -4,7 +4,7 @@ import { ConflictError, NotFoundError } from '../utils/errors';
 
 class ReferralService {
   private readonly COLLECTION = 'users';
-  private readonly MAX_RETRIES = 5;
+  private readonly MAX_RETRIES = 25;
 
   // Generate referral code strategy
   private generateRandomChars(length: number): string {
@@ -25,8 +25,6 @@ class ReferralService {
     firstName: string,
     lastName: string
   ): Promise<string> {
-    const db = firebaseService.getFirestore();
-    const usersRef = db.collection(this.COLLECTION);
 
     // Strategy 1: firstName (first 4 letters) + 4 random chars
     const firstNamePrefix = this.normalizeString(firstName);
