@@ -3,7 +3,7 @@ import { env } from "./config/env";
 import { logger } from "./utils/logger";
 import passport from "./config/passport-google";
 import "./config/passport-jwt";
-import { Queue } from "bullmq";
+import { Queue, QueueEvents } from "bullmq";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 import { securityHeaders, corsOptions } from "./middleware/security.middleware";
 import { apiLimiter } from "./middleware/rate-limit.middleware";
@@ -18,10 +18,68 @@ const queue = new Queue("imageProcessingQueue", {
   connection: redisConnection,
 });
 
+const verifyUser = new Queue("user-verification-queue", {
+  connection: redisConnection,
+});
+
+const verificationQueueEvent = new QueueEvents("user-verification-queue", {
+  connection: redisConnection,
+});
+
+const checkUserVerification = (userId: string) => {
+  return new Promise((resolve) => {
+    verificationQueueEvent.on("completed", (job) => {
+       resolve(true);
+       console.log("resolved job", job, userId)
+   //    if (job.data.userId === userId) {
+   //    }
+    });
+
+    verificationQueueEvent.on("failed", (job) => {
+      resolve(false);
+      console.log("failed job", job)
+      // if (job.data.userId === userId) {
+      //   resolve(false);
+      // }
+    });
+  });
+};
+
 app.use(securityHeaders);
 app.use(corsOptions);
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+
+app.post("/verify", async (req, res) => {
+  try {
+   console.log("Adding verification job for user:", req.body.userId);
+    const job = await verifyUser.add(
+      "verification",
+      {
+        userId: req.body.userId,
+        email: req.body.email,
+      },
+      { priority: req.body.priority || 1 }
+    );
+
+    console.log(`Verification job added with ID: ${job.id}`);
+
+    let isValidUser = await checkUserVerification(req.body.userId);
+
+    if (isValidUser) {
+      console.log(`User ${req.body.userId} verified successfully.`);
+    } else {
+      console.log(`User ${req.body.userId} verification failed.`);
+    }
+
+    res.status(200).json({ message: "Verification task added to the queue" });
+  } catch (error) {
+    console.error("Error adding verification task to the queue:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to add verification task to the queue" });
+  }
+});
 
 app.post("/queue", async (req, res) => {
   try {
